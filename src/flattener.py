@@ -22,7 +22,7 @@ def flatten_json(data: dict, prefix: str = "") -> dict[str, str]:
 
                 result[full_key] = json.dumps(value)
             else:
-                result[full_key] = ";".join(str(v) for v in value)
+                result[full_key] = "\n".join(str(v) for v in value)
         elif value is None:
             result[full_key] = ""
         else:

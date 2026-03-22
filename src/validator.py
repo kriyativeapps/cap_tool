@@ -94,7 +94,7 @@ def _validate_object(data: dict, schema_node: SchemaObject, path: str, issues: l
 def validate_file(file_path: Path, schema: SchemaObject) -> list[ValidationIssue]:
     filename = file_path.name
     try:
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
         return [ValidationIssue(filename, "", "error", f"Invalid JSON: {e}")]

@@ -14,7 +14,7 @@ import yaml
 
 
 def load_dedup_config(config_path: str | Path) -> dict:
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     return {
         "volatile_fields": set(config.get("volatile_fields", [])),
@@ -90,7 +90,7 @@ def find_duplicates(input_dir: str | Path, config_path: str | Path):
     policies = {}
     for json_file in json_files:
         try:
-            with open(json_file) as f:
+            with open(json_file, encoding="utf-8") as f:
                 policies[json_file.name] = json.load(f)
         except json.JSONDecodeError as e:
             print(f"  Skipping {json_file.name}: {e}")

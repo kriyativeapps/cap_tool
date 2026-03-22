@@ -15,7 +15,7 @@ from .flattener import flatten_json
 
 def load_config(config_path: str | Path) -> list[str]:
     """Load the YAML config and return the list of enabled column keys."""
-    with open(config_path) as f:
+    with open(config_path, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     columns = config.get("columns", {})
     return [key for key, enabled in columns.items() if enabled]
@@ -40,6 +40,7 @@ def generate_report(input_dir: str | Path, config_path: str | Path, output_path:
 
     wb = Workbook()
     ws = wb.active
+    assert ws is not None
     ws.title = "CAP Policies"
 
     # Header style
@@ -56,7 +57,7 @@ def generate_report(input_dir: str | Path, config_path: str | Path, output_path:
 
     # Write data rows
     for row_idx, json_file in enumerate(json_files, 2):
-        with open(json_file) as f:
+        with open(json_file, encoding="utf-8") as f:
             data = json.load(f)
 
         flat = flatten_json(data)
@@ -64,7 +65,9 @@ def generate_report(input_dir: str | Path, config_path: str | Path, output_path:
         ws.cell(row=row_idx, column=1, value=json_file.name)
         for col_idx, key in enumerate(columns, 2):
             value = flat.get(key, "")
-            ws.cell(row=row_idx, column=col_idx, value=value)
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            if isinstance(value, str) and "\n" in value:
+                cell.alignment = Alignment(wrap_text=True, vertical="top")
 
     # Auto-size columns (approximate)
     for col_idx, header in enumerate(headers, 1):

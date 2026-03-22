@@ -1,9 +1,11 @@
 """
-Parse the CAP template schema into a structural definition for validation.
+Parse a CAP schema into a structural definition for validation.
 
-The schema file is NOT a standard JSON Schema — it's a structural template where
-leaf values are type-description strings, arrays contain a single exemplar element,
-and metadata keys ($type, $comment, $ref, $variants) are not data keys.
+Supports two formats:
+1. CAP template format — leaf values are type-description strings, arrays contain
+   a single exemplar element, and metadata keys ($type, $comment, $ref, $variants)
+   are not data keys.
+2. Standard JSON Schema — objects use "type", "properties", and "items" structurally.
 """
 
 import json
@@ -28,7 +30,7 @@ class SchemaLeaf:
 
 @dataclass
 class SchemaArray:
-    item_schema: Union["SchemaLeaf", "SchemaObject", None] = None
+    item_schema: Union["SchemaLeaf", "SchemaArray", "SchemaObject", None] = None
 
 
 @dataclass
@@ -85,15 +87,31 @@ def parse_schema_node(value, parent_properties=None) -> Optional[SchemaNode]:
         return SchemaArray(item_schema=parse_schema_node(item))
 
     if isinstance(value, dict):
+        # Detect standard JSON Schema format (has "type" with optional "properties"/"items")
+        if "type" in value and isinstance(value["type"], str):
+            schema_type = value["type"]
+            if schema_type == "object" and "properties" in value:
+                obj = SchemaObject()
+                for k, v in value["properties"].items():
+                    parsed = parse_schema_node(v)
+                    if parsed is not None:
+                        obj.properties[k] = parsed
+                return obj
+            if schema_type == "array" and "items" in value:
+                return SchemaArray(item_schema=parse_schema_node(value["items"]))
+            if schema_type == "array":
+                return SchemaArray(item_schema=None)
+            # Primitive JSON Schema type (string, integer, boolean, number)
+            return parse_leaf(value.get("description", schema_type))
+
         obj = SchemaObject()
         # First pass: parse non-meta, non-$ref keys
         for k, v in value.items():
             if k in META_KEYS:
                 continue
-            if k == "@odata.type":
-                obj.properties[k] = parse_leaf(v) if isinstance(v, str) else parse_schema_node(v)
-                continue
-            obj.properties[k] = parse_schema_node(v, parent_properties=obj.properties)
+            parsed = parse_leaf(v) if isinstance(v, str) else parse_schema_node(v)
+            if parsed is not None:
+                obj.properties[k] = parsed
 
         # Handle $variants: lift all variant keys into this object's allowed properties
         if "$variants" in value and isinstance(value["$variants"], dict):
@@ -101,7 +119,9 @@ def parse_schema_node(value, parent_properties=None) -> Optional[SchemaNode]:
                 if isinstance(variant_obj, dict):
                     for vk, vv in variant_obj.items():
                         if vk not in META_KEYS and vk not in obj.properties:
-                            obj.properties[vk] = parse_schema_node(vv)
+                            parsed_vv = parse_schema_node(vv)
+                            if parsed_vv is not None:
+                                obj.properties[vk] = parsed_vv
 
         # Handle $ref: copy from sibling
         if "$ref" in value and parent_properties:
@@ -124,7 +144,7 @@ def parse_schema_node(value, parent_properties=None) -> Optional[SchemaNode]:
 
 
 def load_schema(schema_path: str | Path) -> SchemaObject:
-    with open(schema_path) as f:
+    with open(schema_path, encoding="utf-8") as f:
         raw = json.load(f)
     node = parse_schema_node(raw)
     if not isinstance(node, SchemaObject):

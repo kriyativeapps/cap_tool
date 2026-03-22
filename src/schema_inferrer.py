@@ -37,7 +37,7 @@ def infer_schema(input_dir: str | Path, output_path: str | Path, schema_uri: str
     file_count = 0
     for json_file in json_files:
         try:
-            with open(json_file) as f:
+            with open(json_file, encoding="utf-8") as f:
                 data = json.load(f)
             builder.add_object(data)
             file_count += 1
@@ -46,7 +46,7 @@ def infer_schema(input_dir: str | Path, output_path: str | Path, schema_uri: str
 
     schema = builder.to_schema()
 
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(schema, f, indent=2)
 
     print(f"Inferred schema from {file_count} files -> {output_path}")
@@ -90,7 +90,7 @@ def compare_schemas(inferred_path: str | Path, reference_path: str | Path):
     from .schema_parser import load_schema
 
     # Load inferred schema keys
-    with open(inferred_path) as f:
+    with open(inferred_path, encoding="utf-8") as f:
         inferred = json.load(f)
     inferred_keys = set(_extract_paths(inferred))
 

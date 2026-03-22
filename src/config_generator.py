@@ -21,7 +21,7 @@ def generate_config(schema_path: str | Path, output_path: str | Path, all_true: 
 
     config = {"columns": columns}
 
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write("# CAP Report Configuration\n")
         f.write("# Set keys to false to exclude from the Excel report\n")
         f.write("#\n")
