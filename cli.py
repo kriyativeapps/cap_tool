@@ -3,16 +3,23 @@
 CAP Tool — Azure Conditional Access Policy evaluation utility.
 
 Subcommands:
+  generate   Generate YAML config files for report, dedup, and similar
   validate   Validate JSON dump files against the template schema
-  generate   Generate a YAML report config from the schema
   report     Create an Excel report from validated JSON files
+  dedup      Find duplicate policies across JSON files
+  similar    Find near-duplicate policies that are merge candidates
   infer      Infer a JSON Schema from dump files using genson
   compare    Compare inferred schema against the reference template
-  dedup      Find duplicate policies across JSON files
 """
 
 import argparse
 import sys
+
+
+def cmd_generate(args):
+    from src.config_generator import generate_configs
+
+    generate_configs(args.schema, args.output_dir, all_true=not args.all_false)
 
 
 def cmd_validate(args):
@@ -44,16 +51,22 @@ def cmd_validate(args):
         sys.exit(1)
 
 
-def cmd_generate(args):
-    from src.config_generator import generate_config
-
-    generate_config(args.schema, args.output, all_true=not args.all_false)
-
-
 def cmd_report(args):
     from src.excel_reporter import generate_report
 
     generate_report(args.input_dir, args.config, args.output)
+
+
+def cmd_dedup(args):
+    from src.dedup import find_duplicates
+
+    find_duplicates(args.input_dir, args.config)
+
+
+def cmd_similar(args):
+    from src.similar import find_similar
+
+    find_similar(args.input_dir, args.config)
 
 
 def cmd_infer(args):
@@ -68,12 +81,6 @@ def cmd_compare(args):
     compare_schemas(args.inferred, args.reference)
 
 
-def cmd_dedup(args):
-    from src.dedup import find_duplicates
-
-    find_duplicates(args.input_dir, args.config)
-
-
 def main():
     parser = argparse.ArgumentParser(
         prog="cap_tool",
@@ -81,18 +88,18 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    # --- generate ---
+    p_gen = subparsers.add_parser("generate", help="Generate YAML config files for report, dedup, and similar")
+    p_gen.add_argument("--schema", required=True, help="Path to the template schema JSON file")
+    p_gen.add_argument("--output-dir", default=".", help="Directory to write config files into (default: current dir)")
+    p_gen.add_argument("--all-false", action="store_true", help="Set all report columns to false (opt-in mode)")
+    p_gen.set_defaults(func=cmd_generate)
+
     # --- validate ---
     p_val = subparsers.add_parser("validate", help="Validate JSON dumps against the template schema")
     p_val.add_argument("--schema", required=True, help="Path to the template schema JSON file")
     p_val.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
     p_val.set_defaults(func=cmd_validate)
-
-    # --- generate ---
-    p_gen = subparsers.add_parser("generate", help="Generate a YAML report config from the schema")
-    p_gen.add_argument("--schema", required=True, help="Path to the template schema JSON file")
-    p_gen.add_argument("--output", default="report_config.yaml", help="Output YAML config file path")
-    p_gen.add_argument("--all-false", action="store_true", help="Set all columns to false (opt-in mode)")
-    p_gen.set_defaults(func=cmd_generate)
 
     # --- report ---
     p_rep = subparsers.add_parser("report", help="Create an Excel report from JSON files + YAML config")
@@ -100,6 +107,18 @@ def main():
     p_rep.add_argument("--config", required=True, help="Path to the YAML report config file")
     p_rep.add_argument("--output", default="cap_report.xlsx", help="Output Excel file path")
     p_rep.set_defaults(func=cmd_report)
+
+    # --- dedup ---
+    p_dup = subparsers.add_parser("dedup", help="Find duplicate policies across JSON files")
+    p_dup.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
+    p_dup.add_argument("--config", default="dedup_config.yaml", help="Path to the dedup YAML config file")
+    p_dup.set_defaults(func=cmd_dedup)
+
+    # --- similar ---
+    p_sim = subparsers.add_parser("similar", help="Find near-duplicate policies that are merge candidates")
+    p_sim.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
+    p_sim.add_argument("--config", default="similar_config.yaml", help="Path to the similar YAML config file")
+    p_sim.set_defaults(func=cmd_similar)
 
     # --- infer ---
     p_inf = subparsers.add_parser("infer", help="Infer a JSON Schema from dump files using genson")
@@ -112,12 +131,6 @@ def main():
     p_cmp.add_argument("--inferred", required=True, help="Path to the genson-inferred JSON Schema")
     p_cmp.add_argument("--reference", required=True, help="Path to the reference template schema")
     p_cmp.set_defaults(func=cmd_compare)
-
-    # --- dedup ---
-    p_dup = subparsers.add_parser("dedup", help="Find duplicate policies across JSON files")
-    p_dup.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
-    p_dup.add_argument("--config", default="dedup_config.yaml", help="Path to the dedup YAML config file")
-    p_dup.set_defaults(func=cmd_dedup)
 
     args = parser.parse_args()
     args.func(args)
