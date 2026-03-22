@@ -1,0 +1,163 @@
+{
+  "$schema": "https://learn.microsoft.com/en-us/graph/api/resources/conditionalaccesspolicy?view=graph-rest-1.0",
+  "$comment": "Full expanded schema for microsoft.graph.conditionalAccessPolicy (Graph API v1.0)",
+
+  "id": "String (identifier, read-only)",
+  "displayName": "String (required)",
+  "templateId": "String | null",
+  "createdDateTime": "DateTimeOffset (ISO 8601, UTC, read-only)",
+  "modifiedDateTime": "DateTimeOffset (ISO 8601, UTC, read-only)",
+  "state": "'enabled' | 'disabled' | 'enabledForReportingButNotEnforced'",
+
+  "conditions": {
+    "$type": "microsoft.graph.conditionalAccessConditionSet",
+    "$comment": "Required. At least one application rule must be present.",
+
+    "clientAppTypes": ["'all' | 'browser' | 'mobileAppsAndDesktopClients' | 'exchangeActiveSync' | 'easSupported' | 'other'"],
+    "signInRiskLevels": ["'low' | 'medium' | 'high' | 'hidden' | 'none' | 'unknownFutureValue'"],
+    "userRiskLevels": ["'low' | 'medium' | 'high' | 'hidden' | 'none' | 'unknownFutureValue'"],
+    "servicePrincipalRiskLevels": ["'low' | 'medium' | 'high' | 'hidden' | 'none' | 'unknownFutureValue'"],
+    "insiderRiskLevels": "'minor' | 'moderate' | 'elevated' | 'unknownFutureValue' | null",
+
+    "applications": {
+      "$type": "microsoft.graph.conditionalAccessApplications",
+      "includeApplications": ["String (app ID or 'All' or 'None' or 'Office365' or 'MicrosoftAdminPortals')"],
+      "excludeApplications": ["String (app ID)"],
+      "includeUserActions": ["String ('urn:user:registersecurityinfo' | 'urn:user:registerdevice')"],
+      "includeAuthenticationContextClassReferences": ["String (auth context class ref ID)"],
+      "applicationFilter": {
+        "$type": "microsoft.graph.conditionalAccessFilter",
+        "mode": "'include' | 'exclude'",
+        "rule": "String (OData filter expression)"
+      }
+    },
+
+    "users": {
+      "$type": "microsoft.graph.conditionalAccessUsers",
+      "includeUsers": ["String (user ID or 'All' or 'None' or 'GuestsOrExternalUsers')"],
+      "excludeUsers": ["String (user ID or 'GuestsOrExternalUsers')"],
+      "includeGroups": ["String (group ID)"],
+      "excludeGroups": ["String (group ID)"],
+      "includeRoles": ["String (directory role template ID)"],
+      "excludeRoles": ["String (directory role template ID)"],
+      "includeGuestsOrExternalUsers": {
+        "$type": "microsoft.graph.conditionalAccessGuestsOrExternalUsers",
+        "guestOrExternalUserTypes": "'none' | 'internalGuest' | 'b2bCollaborationGuest' | 'b2bCollaborationMember' | 'b2bDirectConnectUser' | 'otherExternalUser' | 'serviceProvider' | 'unknownFutureValue'",
+        "externalTenants": {
+          "$type": "microsoft.graph.conditionalAccessExternalTenants (abstract)",
+          "membershipKind": "'all' | 'enumerated' | 'unknownFutureValue'",
+          "$variants": {
+            "conditionalAccessAllExternalTenants": {
+              "@odata.type": "#microsoft.graph.conditionalAccessAllExternalTenants",
+              "membershipKind": "'all'"
+            },
+            "conditionalAccessEnumeratedExternalTenants": {
+              "@odata.type": "#microsoft.graph.conditionalAccessEnumeratedExternalTenants",
+              "membershipKind": "'enumerated'",
+              "members": ["String (tenant ID)"]
+            }
+          }
+        }
+      },
+      "excludeGuestsOrExternalUsers": {
+        "$ref": "same structure as includeGuestsOrExternalUsers"
+      }
+    },
+
+    "platforms": {
+      "$type": "microsoft.graph.conditionalAccessPlatforms",
+      "includePlatforms": ["'android' | 'iOS' | 'windows' | 'windowsPhone' | 'macOS' | 'linux' | 'all' | 'unknownFutureValue'"],
+      "excludePlatforms": ["'android' | 'iOS' | 'windows' | 'windowsPhone' | 'macOS' | 'linux' | 'unknownFutureValue'"]
+    },
+
+    "locations": {
+      "$type": "microsoft.graph.conditionalAccessLocations",
+      "includeLocations": ["String (named location ID or 'All' or 'AllTrusted' or 'MicrosoftAdminPortals')"],
+      "excludeLocations": ["String (named location ID or 'AllTrusted')"]
+    },
+
+    "devices": {
+      "$type": "microsoft.graph.conditionalAccessDevices",
+      "filters": {
+        "$type": "microsoft.graph.conditionalAccessFilter",
+        "mode": "'include' | 'exclude'",
+        "rule": "String (OData filter expression on device properties)"
+      }
+    },
+
+    "clientApplications": {
+      "$type": "microsoft.graph.conditionalAccessClientApplications",
+      "includeServicePrincipals": ["String (service principal ID or 'All' or 'None')"],
+      "excludeServicePrincipals": ["String (service principal ID)"],
+      "servicePrincipalFilter": {
+        "$type": "microsoft.graph.conditionalAccessFilter",
+        "mode": "'include' | 'exclude'",
+        "rule": "String (OData filter expression)"
+      }
+    },
+
+    "authenticationFlows": {
+      "$type": "microsoft.graph.conditionalAccessAuthenticationFlows",
+      "transferMethods": "'none' | 'deviceCodeFlow' | 'authenticationTransfer' | 'unknownFutureValue'"
+    }
+  },
+
+  "grantControls": {
+    "$type": "microsoft.graph.conditionalAccessGrantControls",
+    "$comment": "null means no grant controls (allow by default). Specify operator when combining controls.",
+    "operator": "'AND' | 'OR'",
+    "builtInControls": [
+      "'mfa' | 'compliantDevice' | 'domainJoinedDevice' | 'approvedApplication' | 'compliantApplication' | 'passwordChange' | 'unknownFutureValue'"
+    ],
+    "customAuthenticationFactors": ["String (custom auth factor ID)"],
+    "termsOfUse": ["String (terms of use agreement ID)"],
+    "authenticationStrength": {
+      "$type": "microsoft.graph.authenticationStrengthPolicy (reference)",
+      "id": "String (authentication strength policy ID)"
+    }
+  },
+
+  "sessionControls": {
+    "$type": "microsoft.graph.conditionalAccessSessionControls",
+    "$comment": "null means no session controls enforced.",
+
+    "disableResilienceDefaults": "Boolean | null",
+
+    "applicationEnforcedRestrictions": {
+      "$type": "microsoft.graph.applicationEnforcedRestrictionsSessionControl",
+      "$comment": "Instructs Exchange Online or SharePoint Online to enforce app-specific restrictions.",
+      "isEnabled": "Boolean"
+    },
+
+    "cloudAppSecurity": {
+      "$type": "microsoft.graph.cloudAppSecuritySessionControl",
+      "isEnabled": "Boolean",
+      "cloudAppSecurityType": "'mcasConfigured' | 'monitorOnly' | 'blockDownloads' | 'unknownFutureValue'"
+    },
+
+    "persistentBrowser": {
+      "$type": "microsoft.graph.persistentBrowserSessionControl",
+      "isEnabled": "Boolean",
+      "mode": "'always' | 'never'"
+    },
+
+    "signInFrequency": {
+      "$type": "microsoft.graph.signInFrequencySessionControl",
+      "isEnabled": "Boolean",
+      "type": "'days' | 'hours' | null",
+      "value": "Int32 | null",
+      "authenticationType": "'primaryAndSecondaryAuthentication' | 'secondaryAuthentication' | 'unknownFutureValue'",
+      "frequencyInterval": "'timeBased' | 'everyTime' | 'unknownFutureValue'"
+    },
+
+    "continuousAccessEvaluation": {
+      "$type": "microsoft.graph.continuousAccessEvaluationSessionControl",
+      "mode": "'strictEnforcement' | 'disabled' | 'unknownFutureValue' | 'strictLocation'"
+    },
+
+    "secureSignInSession": {
+      "$type": "microsoft.graph.secureSignInSessionControl",
+      "isEnabled": "Boolean"
+    }
+  }
+}

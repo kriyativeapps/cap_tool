@@ -1,0 +1,65 @@
+{
+  "id": "a1b2c3d4-0001-4000-8000-000000000001",
+  "displayName": "Require MFA for All Users",
+  "templateId": null,
+  "createdDateTime": "2024-03-01T09:00:00Z",
+  "modifiedDateTime": "2024-11-15T14:22:00Z",
+  "state": "enabled",
+
+  "conditions": {
+    "clientAppTypes": ["browser", "mobileAppsAndDesktopClients"],
+    "signInRiskLevels": [],
+    "userRiskLevels": [],
+    "servicePrincipalRiskLevels": [],
+    "insiderRiskLevels": null,
+
+    "applications": {
+      "includeApplications": ["All"],
+      "excludeApplications": [],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": [],
+      "applicationFilter": null
+    },
+
+    "users": {
+      "includeUsers": ["All"],
+      "excludeUsers": [],
+      "includeGroups": [],
+      "excludeGroups": ["c9d0e1f2-0001-4000-8000-aabbccddeeff"],
+      "includeRoles": [],
+      "excludeRoles": ["62e90394-69f5-4237-9190-012177145e10"],
+      "includeGuestsOrExternalUsers": null,
+      "excludeGuestsOrExternalUsers": null
+    },
+
+    "platforms": null,
+    "locations": null,
+    "devices": null,
+    "clientApplications": null,
+    "authenticationFlows": null
+  },
+
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": ["mfa"],
+    "customAuthenticationFactors": [],
+    "termsOfUse": [],
+    "authenticationStrength": null
+  },
+
+  "sessionControls": {
+    "disableResilienceDefaults": null,
+    "applicationEnforcedRestrictions": null,
+    "cloudAppSecurity": null,
+    "persistentBrowser": null,
+    "signInFrequency": {
+      "isEnabled": true,
+      "type": "hours",
+      "value": 8,
+      "authenticationType": "primaryAndSecondaryAuthentication",
+      "frequencyInterval": "timeBased"
+    },
+    "continuousAccessEvaluation": null,
+    "secureSignInSession": null
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "state": "enabled",
+  "sessionControls": null,
+  "modifiedDateTime": "2025-01-10T08:00:00Z",
+  "displayName": "Require MFA for All Users",
+  "id": "ffffffff-0000-1111-2222-333333333333",
+  "createdDateTime": "2025-01-01T00:00:00Z",
+  "templateId": "some-different-template",
+  "grantControls": {
+    "termsOfUse": [],
+    "builtInControls": ["mfa"],
+    "operator": "OR",
+    "customAuthenticationFactors": []
+  },
+  "conditions": {
+    "devices": null,
+    "platforms": null,
+    "authenticationFlows": null,
+    "users": {
+      "excludeRoles": [],
+      "includeRoles": [],
+      "excludeGroups": ["b1234567-89ab-cdef-0123-456789abcdef"],
+      "includeGroups": [],
+      "excludeUsers": ["f8a1b2c3-d4e5-6789-0abc-def123456789"],
+      "includeUsers": ["All"]
+    },
+    "applications": {
+      "includeAuthenticationContextClassReferences": [],
+      "includeUserActions": [],
+      "excludeApplications": [],
+      "includeApplications": ["All"]
+    },
+    "clientApplications": null,
+    "insiderRiskLevels": null,
+    "servicePrincipalRiskLevels": [],
+    "userRiskLevels": [],
+    "signInRiskLevels": [],
+    "clientAppTypes": ["all"],
+    "locations": null
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "id": "a1b2c3d4-0003-4000-8000-000000000003",
+  "displayName": "High Risk Sign-In — Require Compliant Device or MFA + MCAS Monitor",
+  "templateId": null,
+  "createdDateTime": "2024-05-22T10:30:00Z",
+  "modifiedDateTime": "2025-01-08T17:45:00Z",
+  "state": "enabled",
+
+  "conditions": {
+    "clientAppTypes": ["browser", "mobileAppsAndDesktopClients"],
+    "signInRiskLevels": ["high", "medium"],
+    "userRiskLevels": [],
+    "servicePrincipalRiskLevels": [],
+    "insiderRiskLevels": null,
+
+    "applications": {
+      "includeApplications": ["Office365"],
+      "excludeApplications": [],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": [],
+      "applicationFilter": null
+    },
+
+    "users": {
+      "includeUsers": [],
+      "excludeUsers": [],
+      "includeGroups": ["d1e2f3a4-cafe-4000-8000-112233445566"],
+      "excludeGroups": [],
+      "includeRoles": [],
+      "excludeRoles": ["62e90394-69f5-4237-9190-012177145e10"],
+      "includeGuestsOrExternalUsers": null,
+      "excludeGuestsOrExternalUsers": null
+    },
+
+    "platforms": {
+      "includePlatforms": ["windows", "macOS", "iOS", "android"],
+      "excludePlatforms": []
+    },
+
+    "locations": {
+      "includeLocations": ["All"],
+      "excludeLocations": ["AllTrusted"]
+    },
+
+    "devices": {
+      "filters": {
+        "mode": "exclude",
+        "rule": "device.isCompliant -eq True -and device.trustType -eq \"AzureAD\""
+      }
+    },
+
+    "clientApplications": null,
+    "authenticationFlows": null
+  },
+
+  "grantControls": {
+    "operator": "AND",
+    "builtInControls": ["mfa", "compliantDevice"],
+    "customAuthenticationFactors": [],
+    "termsOfUse": [],
+    "authenticationStrength": {
+      "id": "00000000-0000-0000-0000-000000000002"
+    }
+  },
+
+  "sessionControls": {
+    "disableResilienceDefaults": false,
+    "applicationEnforcedRestrictions": null,
+    "cloudAppSecurity": {
+      "isEnabled": true,
+      "cloudAppSecurityType": "monitorOnly"
+    },
+    "persistentBrowser": {
+      "isEnabled": true,
+      "mode": "never"
+    },
+    "signInFrequency": {
+      "isEnabled": true,
+      "type": "hours",
+      "value": 1,
+      "authenticationType": "primaryAndSecondaryAuthentication",
+      "frequencyInterval": "timeBased"
+    },
+    "continuousAccessEvaluation": {
+      "mode": "strictEnforcement"
+    },
+    "secureSignInSession": null
+  }
+}
