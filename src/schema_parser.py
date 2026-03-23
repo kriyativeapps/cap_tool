@@ -87,7 +87,16 @@ def parse_schema_node(value, parent_properties=None) -> Optional[SchemaNode]:
         return SchemaArray(item_schema=parse_schema_node(item))
 
     if isinstance(value, dict):
-        # Detect standard JSON Schema format (has "type" with optional "properties"/"items")
+        # Detect standard JSON Schema format
+
+        # Handle "anyOf" (genson nullable pattern: [{"type":"null"}, {"type":"object",...}])
+        if "anyOf" in value and isinstance(value["anyOf"], list):
+            non_null = [v for v in value["anyOf"] if v != {"type": "null"}]
+            if non_null:
+                return parse_schema_node(non_null[0])
+            return parse_leaf("null")
+
+        # Handle "type" as a string
         if "type" in value and isinstance(value["type"], str):
             schema_type = value["type"]
             if schema_type == "object" and "properties" in value:
@@ -101,8 +110,14 @@ def parse_schema_node(value, parent_properties=None) -> Optional[SchemaNode]:
                 return SchemaArray(item_schema=parse_schema_node(value["items"]))
             if schema_type == "array":
                 return SchemaArray(item_schema=None)
-            # Primitive JSON Schema type (string, integer, boolean, number)
+            # Primitive or null JSON Schema type
             return parse_leaf(value.get("description", schema_type))
+
+        # Handle "type" as a list (genson nullable: ["null", "string"])
+        if "type" in value and isinstance(value["type"], list):
+            non_null_types = [t for t in value["type"] if t != "null"]
+            resolved_type = non_null_types[0] if non_null_types else "null"
+            return parse_leaf(value.get("description", resolved_type))
 
         obj = SchemaObject()
         # First pass: parse non-meta, non-$ref keys
@@ -144,7 +159,7 @@ def parse_schema_node(value, parent_properties=None) -> Optional[SchemaNode]:
 
 
 def load_schema(schema_path: str | Path) -> SchemaObject:
-    with open(schema_path, encoding="utf-8") as f:
+    with open(schema_path, encoding="utf-8-sig") as f:
         raw = json.load(f)
     node = parse_schema_node(raw)
     if not isinstance(node, SchemaObject):

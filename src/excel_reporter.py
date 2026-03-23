@@ -15,7 +15,7 @@ from .flattener import flatten_json
 
 def load_config(config_path: str | Path) -> list[str]:
     """Load the YAML config and return the list of enabled column keys."""
-    with open(config_path, encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8-sig") as f:
         config = yaml.safe_load(f)
     columns = config.get("columns", {})
     return [key for key, enabled in columns.items() if enabled]
@@ -57,7 +57,7 @@ def generate_report(input_dir: str | Path, config_path: str | Path, output_path:
 
     # Write data rows
     for row_idx, json_file in enumerate(json_files, 2):
-        with open(json_file, encoding="utf-8") as f:
+        with open(json_file, encoding="utf-8-sig") as f:
             data = json.load(f)
 
         flat = flatten_json(data)

@@ -15,7 +15,7 @@ from .dedup import _normalize, _remove_volatile
 
 
 def _load_similar_config(config_path: str | Path) -> dict:
-    with open(config_path, encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8-sig") as f:
         config = yaml.safe_load(f)
     return {
         "ignore_fields": set(config.get("ignore_fields", [])),
@@ -70,7 +70,7 @@ def find_similar(input_dir: str | Path, config_path: str | Path):
     policies: dict[str, dict] = {}
     for json_file in json_files:
         try:
-            with open(json_file, encoding="utf-8") as f:
+            with open(json_file, encoding="utf-8-sig") as f:
                 policies[json_file.name] = json.load(f)
         except json.JSONDecodeError as e:
             print(f"  Skipping {json_file.name}: {e}")
