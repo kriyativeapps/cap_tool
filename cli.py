@@ -89,45 +89,51 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # --- generate ---
-    p_gen = subparsers.add_parser("generate", help="Generate YAML config files for report, dedup, and similar")
-    p_gen.add_argument("--schema", required=True, help="Path to the template schema JSON file")
-    p_gen.add_argument("--output-dir", default=".", help="Directory to write config files into (default: current dir)")
+    p_gen = subparsers.add_parser("generate", aliases=["gen"],
+                                  help="Generate YAML config files for report, dedup, and similar")
+    p_gen.add_argument("-s", "--schema", required=True, help="Path to the template schema JSON file")
+    p_gen.add_argument("-o", "--output-dir", default=".", help="Directory to write config files into (default: current dir)")
     p_gen.add_argument("--all-false", action="store_true", help="Set all report columns to false (opt-in mode)")
     p_gen.set_defaults(func=cmd_generate)
 
     # --- validate ---
-    p_val = subparsers.add_parser("validate", help="Validate JSON dumps against the template schema")
-    p_val.add_argument("--schema", required=True, help="Path to the template schema JSON file")
-    p_val.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
+    p_val = subparsers.add_parser("validate", aliases=["val"],
+                                  help="Validate JSON dumps against the template schema")
+    p_val.add_argument("-s", "--schema", required=True, help="Path to the template schema JSON file")
+    p_val.add_argument("-i", "--input-dir", required=True, help="Directory containing CAP JSON dump files")
     p_val.set_defaults(func=cmd_validate)
 
     # --- report ---
-    p_rep = subparsers.add_parser("report", help="Create an Excel report from JSON files + YAML config")
-    p_rep.add_argument("--input-dir", required=True, help="Directory containing validated CAP JSON files")
-    p_rep.add_argument("--config", required=True, help="Path to the YAML report config file")
-    p_rep.add_argument("--output", default="cap_report.xlsx", help="Output Excel file path")
+    p_rep = subparsers.add_parser("report", aliases=["rep"],
+                                  help="Create an Excel report from JSON files + YAML config")
+    p_rep.add_argument("-i", "--input-dir", required=True, help="Directory containing validated CAP JSON files")
+    p_rep.add_argument("-c", "--config", required=True, help="Path to the YAML report config file")
+    p_rep.add_argument("-o", "--output", default="cap_report.xlsx", help="Output Excel file path")
     p_rep.set_defaults(func=cmd_report)
 
     # --- dedup ---
-    p_dup = subparsers.add_parser("dedup", help="Find duplicate policies across JSON files")
-    p_dup.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
-    p_dup.add_argument("--config", default="dedup_config.yaml", help="Path to the dedup YAML config file")
+    p_dup = subparsers.add_parser("dedup", aliases=["dup"],
+                                  help="Find duplicate policies across JSON files")
+    p_dup.add_argument("-i", "--input-dir", required=True, help="Directory containing CAP JSON dump files")
+    p_dup.add_argument("-c", "--config", default="dedup_config.yaml", help="Path to the dedup YAML config file")
     p_dup.set_defaults(func=cmd_dedup)
 
     # --- similar ---
-    p_sim = subparsers.add_parser("similar", help="Find near-duplicate policies that are merge candidates")
-    p_sim.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
-    p_sim.add_argument("--config", default="similar_config.yaml", help="Path to the similar YAML config file")
+    p_sim = subparsers.add_parser("similar", aliases=["sim"],
+                                  help="Find near-duplicate policies that are merge candidates")
+    p_sim.add_argument("-i", "--input-dir", required=True, help="Directory containing CAP JSON dump files")
+    p_sim.add_argument("-c", "--config", default="similar_config.yaml", help="Path to the similar YAML config file")
     p_sim.set_defaults(func=cmd_similar)
 
     # --- infer ---
     p_inf = subparsers.add_parser("infer", help="Infer a JSON Schema from dump files using genson")
-    p_inf.add_argument("--input-dir", required=True, help="Directory containing CAP JSON dump files")
-    p_inf.add_argument("--output", default="inferred_schema.json", help="Output JSON Schema file path")
+    p_inf.add_argument("-i", "--input-dir", required=True, help="Directory containing CAP JSON dump files")
+    p_inf.add_argument("-o", "--output", default="inferred_schema.json", help="Output JSON Schema file path")
     p_inf.set_defaults(func=cmd_infer)
 
     # --- compare ---
-    p_cmp = subparsers.add_parser("compare", help="Compare inferred schema against the reference template")
+    p_cmp = subparsers.add_parser("compare", aliases=["cmp"],
+                                  help="Compare inferred schema against the reference template")
     p_cmp.add_argument("--inferred", required=True, help="Path to the genson-inferred JSON Schema")
     p_cmp.add_argument("--reference", required=True, help="Path to the reference template schema")
     p_cmp.set_defaults(func=cmd_compare)
