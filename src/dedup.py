@@ -16,11 +16,26 @@ import yaml
 def load_dedup_config(config_path: str | Path) -> dict:
     with open(config_path, encoding="utf-8-sig") as f:
         config = yaml.safe_load(f)
+
+    # volatile_fields: accept list (legacy) or dict {path: bool} (new)
+    raw_volatile = config.get("volatile_fields", [])
+    if isinstance(raw_volatile, dict):
+        volatile = {k for k, v in raw_volatile.items() if v}
+    else:
+        volatile = set(raw_volatile)
+
+    # compare_fields: accept list (legacy) or dict {path: bool} (new)
+    raw_compare = config.get("compare_fields", [])
+    if isinstance(raw_compare, dict):
+        compare = [k for k, v in raw_compare.items() if v]
+    else:
+        compare = list(raw_compare)
+
     return {
-        "volatile_fields": set(config.get("volatile_fields", [])),
+        "volatile_fields": volatile,
         "sort_arrays": config.get("sort_arrays", True),
         "modes": config.get("modes", ["content"]),
-        "compare_fields": config.get("compare_fields", []),
+        "compare_fields": compare,
     }
 
 

@@ -17,8 +17,16 @@ from .dedup import _normalize, _remove_volatile
 def _load_similar_config(config_path: str | Path) -> dict:
     with open(config_path, encoding="utf-8-sig") as f:
         config = yaml.safe_load(f)
+
+    # ignore_fields: accept list (legacy) or dict {path: bool} (new)
+    raw_ignore = config.get("ignore_fields", [])
+    if isinstance(raw_ignore, dict):
+        ignore = {k for k, v in raw_ignore.items() if v}
+    else:
+        ignore = set(raw_ignore)
+
     return {
-        "ignore_fields": set(config.get("ignore_fields", [])),
+        "ignore_fields": ignore,
         "limit": config.get("limit", 5),
     }
 
