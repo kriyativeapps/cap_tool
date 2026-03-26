@@ -19,7 +19,8 @@ import sys
 def cmd_generate(args):
     from src.config_generator import generate_configs
 
-    generate_configs(args.schema, args.output_dir, all_true=not args.all_false)
+    generate_configs(args.schema, args.output_dir, all_true=not args.all_false,
+                     input_dir=getattr(args, "input_dir", None))
 
 
 def cmd_validate(args):
@@ -94,6 +95,7 @@ def main():
     p_gen.add_argument("-s", "--schema", required=True, help="Path to the template schema JSON file")
     p_gen.add_argument("-o", "--output-dir", default=".", help="Directory to write config files into (default: current dir)")
     p_gen.add_argument("--all-false", action="store_true", help="Set all report columns to false (opt-in mode)")
+    p_gen.add_argument("-i", "--input-dir", default=None, help="Policy dir — only include fields observed in data")
     p_gen.set_defaults(func=cmd_generate)
 
     # --- validate ---

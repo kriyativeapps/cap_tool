@@ -2,22 +2,59 @@
 Generate YAML config files for the report, dedup, and similar commands.
 """
 
+import json
 from pathlib import Path
 
 import yaml
 
-from .flattener import flatten_schema
+from .flattener import flatten_json, flatten_schema
 from .schema_parser import load_schema
 
 
-def generate_configs(schema_path: str | Path, output_dir: str | Path, all_true: bool = True):
-    """Read the schema and write all three config files to output_dir."""
+def _collect_observed_paths(input_dir: Path) -> set[str]:
+    """Scan all JSON policy files and return the set of dot-notation paths
+    that have a non-empty value in at least one file."""
+    observed: set[str] = set()
+    json_files = sorted(input_dir.glob("*.json"))
+    json_files = [f for f in json_files if "schema" not in f.name.lower()]
+
+    for json_file in json_files:
+        try:
+            with open(json_file, encoding="utf-8-sig") as f:
+                data = json.load(f)
+            flat = flatten_json(data)
+            for key, value in flat.items():
+                if value:  # skip empty strings (from None / empty arrays)
+                    observed.add(key)
+        except (json.JSONDecodeError, Exception):
+            pass
+
+    return observed
+
+
+def generate_configs(schema_path: str | Path, output_dir: str | Path,
+                     all_true: bool = True, input_dir: str | Path | None = None):
+    """Read the schema and write all three config files to output_dir.
+
+    If *input_dir* is provided, only include paths that actually appear
+    with non-empty values in the policy files (eliminates phantom columns).
+    """
     schema = load_schema(schema_path)
     paths = flatten_schema(schema)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Generating config files in {output_dir}/")
+    # Filter to paths actually observed in data
+    if input_dir:
+        input_dir = Path(input_dir)
+        observed = _collect_observed_paths(input_dir)
+        before = len(paths)
+        paths = [p for p in paths if p in observed]
+        dropped = before - len(paths)
+        if dropped:
+            print(f"Filtered {dropped} empty paths (not observed in any policy file)")
+
+    print(f"Generating config files in {output_dir}/ ({len(paths)} fields)")
     _generate_report_config(paths, output_dir / "report_config.yaml", all_true)
     _generate_dedup_config(paths, output_dir / "dedup_config.yaml")
     _generate_similar_config(paths, output_dir / "similar_config.yaml")
